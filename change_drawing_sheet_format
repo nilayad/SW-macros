@@ -1,0 +1,56 @@
+'------------------------------------------------------------
+' Macro Name: change_drawing_sheet_format
+' Description: Changes the brand name in an active SolidWorks document
+' Author: Original macro recorded in SolidWorks by Nilaya d
+'------------------------------------------------------------
+
+Option Explicit
+
+Sub change_brand_name()
+
+    ' SolidWorks application variables
+    Dim swApp As SldWorks.SldWorks
+    Dim swModel As SldWorks.ModelDoc2
+    Dim boolStatus As Boolean
+    Dim longStatus As Long
+    Dim longWarnings As Long
+    
+    ' Initialize SolidWorks application
+    Set swApp = Application.SldWorks
+    
+    ' Get the active document (part, assembly, or drawing)
+    Set swModel = swApp.ActiveDoc
+    If swModel Is Nothing Then
+        MsgBox "No active document found. Please open a SolidWorks file."
+        Exit Sub
+    End If
+    
+    ' Zoom to fit the document
+    swModel.ViewZoomtofit2
+    
+    ' Clear any existing selections
+    swModel.ClearSelection2 True
+    
+    ' Example: select a sheet named "Sheet1" in a drawing
+    boolStatus = swModel.Extension.SelectByID2("Sheet1", "SHEET", 0, 0, 0, False, 0, Nothing, 0)
+    
+    ' Set up the sheet or perform the brand name change
+    ' (You can replace this section with the actual action you need)
+    Call SetupSheet5S(swModel) ' Example placeholder for recorded action
+    
+    ' Notify user
+    MsgBox "Brand name change macro executed successfully."
+
+End Sub
+
+'------------------------------------------------------------
+' Placeholder subroutine for recorded sheet setup
+' Replace this with actual code recorded from SolidWorks
+'------------------------------------------------------------
+Sub SetupSheet5S(swModel As SldWorks.ModelDoc2)
+    ' Example actions: this would contain your recorded macro steps
+    ' like setting text, updating custom properties, etc.
+    
+    ' For demonstration, we just zoom to fit again
+    swModel.ViewZoomtofit2
+End Sub
