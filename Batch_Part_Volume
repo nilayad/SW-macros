@@ -1,0 +1,91 @@
+'------------------------------------------------------------
+' Macro Name: Batch_Part_Volume_Export
+' base code by: Deepak Gupta (http://gupta9665.com/)
+' Modified by : nilaya d
+' Description: Exports volume of Parts in the specified path to Excel
+' Pre-Condition: Specify the file path in the macro
+' Post-Condition: Excel file will be saved on Desktop with part volumes
+'------------------------------------------------------------
+
+Option Explicit
+
+Sub Batch_Part_Volume_Export()
+    
+    ' Declare SolidWorks variables
+    Dim swApp As SldWorks.SldWorks
+    Dim swModel As ModelDoc2
+    Dim MassProp As MassProperty
+    Dim longstatus As Long
+    Dim longwarnings As Long
+    Dim sFileName As String
+    Dim Path2 As String
+    Dim sModelName As String
+    
+    ' Declare Excel variables
+    Dim xlApp As Excel.Application
+    Dim xlWb As Excel.Workbook
+    Dim xlWs As Excel.Worksheet
+    Dim xlCurRow As Long
+    Dim OutputPath As String
+    Dim OutputFN As String
+    
+    ' User environment
+    OutputPath = Environ("USERPROFILE") & "\Desktop\"
+    OutputFN = "Volume Details.xlsx"
+    
+    ' Start Excel
+    Set xlApp = New Excel.Application
+    xlApp.Visible = True
+    Set xlWb = xlApp.Workbooks.Add
+    Set xlWs = xlWb.Sheets(1)
+    
+    ' Write header
+    xlWs.Range("A1").Value = "Component Name"
+    xlWs.Range("B1").Value = "Volume (mm^3)"
+    
+    xlCurRow = 2
+    
+    ' Initialize SolidWorks
+    Set swApp = Application.SldWorks
+    
+    ' Example: loop through all files in a folder
+    Path2 = "C:\Samples\"   ' Change your folder path here
+    sFileName = Dir(Path2 & "*.sldprt")
+    
+    Do While sFileName <> ""
+        Set swModel = swApp.OpenDoc6(Path2 & sFileName, swDocPART, _
+                        swOpenDocOptions_Silent, "", longstatus, longwarnings)
+        If Not swModel Is Nothing Then
+            Set MassProp = swModel.Extension.CreateMassProperty
+            Dim volume As Double
+            volume = Round(MassProp.Volume, 3)   ' Change 3 to set decimal accuracy
+            
+            ' Write to Excel
+            xlWs.Cells(xlCurRow, 1).Value = sFileName
+            xlWs.Cells(xlCurRow, 2).Value = volume
+            xlCurRow = xlCurRow + 1
+            
+            ' Close the part
+            swApp.CloseDoc sFileName
+        End If
+        
+        sFileName = Dir()
+    Loop
+    
+    ' Autofit and save
+    xlWs.Columns("A:B").EntireColumn.AutoFit
+    xlWb.SaveAs OutputPath & OutputFN
+    xlWb.Close
+    xlApp.Quit
+    
+    ' Clean up
+    Set MassProp = Nothing
+    Set swModel = Nothing
+    Set swApp = Nothing
+    Set xlWs = Nothing
+    Set xlWb = Nothing
+    Set xlApp = Nothing
+    
+    MsgBox "Volume export completed! File saved to " & OutputPath & OutputFN
+    
+End Sub
