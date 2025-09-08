@@ -1,0 +1,23 @@
+' === change_brand_name1.bas ===
+  
+' ******************************************************************************
+' C:\Users\nilaya\AppData\Local\Macro1.swb - macro recorded on 08/29/20 by nilaya
+' ******************************************************************************
+Dim swApp As Object
+
+Dim Part As Object
+Dim boolstatus As Boolean
+Dim longstatus As Long, longwarnings As Long
+
+Sub main()
+
+Set swApp = Application.SldWorks
+
+Set Part = swApp.ActiveDoc
+
+' Zoom To Fit
+Part.ViewZoomtofit2
+boolstatus = Part.Extension.SelectByID2("Sheet1", "SHEET", 0.38436122814256, 1.52790766929047E-02, 0, False, 0, Nothing, 0)
+Part.ClearSelection2 True
+boolstatus = Part.SetupSheet5("Sheet1", 12, 12, 1, 2, False, "new_format.slddrt", 0.42, 0.297, "Default", True)
+End Sub
