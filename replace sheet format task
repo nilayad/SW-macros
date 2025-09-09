@@ -1,0 +1,95 @@
+' === ReplaceSheetFormatTask1.bas ===
+' ******************************************************************************
+' C:\Users\User\Macro1.swb - macro recorded on 02/10/20 by nilaya
+'Batch drawing sheet format sap.swp ------------- 02/10/2020
+'Pre-Condition: Specify the file path in the macro.
+
+' Please back up your data before use and USE AT OWN RISK
+
+' This macro is provided as is.  No claims, support, refund, safety net, or
+' warranties are expressed or implied.  By using this macro and/or its code in
+' any way whatsoever, the user and any entities which the user represents,
+' agree to hold the authors free of any and all liability.  Free distribution
+' and use of this code in other free works is welcome.  If any portion of
+' this code is used in other works, credit to the authors must be placed in
+' that work within a user viewable location (e.g., macro header).  All other
+' forms of distribution (i.e., not free, fee for delivery, etc) are prohibited
+' without the expressed written consent by the authors.  Use at your own risk!
+' ------------------------------------------------------------------------------
+' Written by: Nilaya Deshpande
+' CREDITS Jeff ' -------------------------------------------------------------------------------
+' ******************************************************************************
+Dim swApp As Object
+
+Dim Part As Object
+Dim boolstatus As Boolean
+Dim longstatus As Long, longwarnings As Long
+Dim sheetformat1 As String
+Dim sheetformat2 As String
+Dim folder As String
+Dim fileName As String
+
+
+Sub main()
+
+folder = "D:\ND\desktop\try mod" ' "C:\User\Desktop\New folder"
+sheetformat2 = "C:\ProgramData\SOLIDWORKS\SOLIDWORKS 20xx\lang\english\sheetformat - SWEPDM_A3TB06.slddrt" ' location of existing sheet format
+sheetformat1 = "C:\ProgramData\SOLIDWORKS\SOLIDWORKS 20xx\lang\english\sheetformat - new_format.slddrt" ' location of new sheet format
+
+Set swApp = Application.SldWorks
+
+fileName = Dir(folder & "\*.slddrw")
+
+Do While fileName <> ""
+
+' Open
+Set Part = swApp.OpenDoc6(folder & "\" & fileName, swDocumentTypes_e.swDocDRAWING, 0, "", longstatus, longwarnings)
+Dim swDrawing As DrawingDoc
+Set swDrawing = Part
+Set Part = swApp.ActivateDoc3(fileName, False, swRebuildOnActivation_e.swRebuildActiveDoc, longstatus)
+
+swApp.FrameLeft = 0
+swApp.FrameTop = 0
+swApp.FrameState = swWindowState_e.swWindowMaximized
+
+Dim firstSheet As String
+Dim currentSheet As Sheet
+Dim updatedSheet1 As Boolean
+Dim vSheetNames As Variant
+Dim vName As Variant
+
+updatedSheet1 = False
+vSheetNames = swDrawing.GetSheetNames()
+
+For Each vName In vSheetNames
+    
+boolstatus = Part.Extension.SelectByID2("Sheet1", "SHEET", 0.35472, 0.01971, 0, False, 0, Nothing, 0)
+Part.ClearSelection2 True
+boolstatus = Part.SetupSheet5("Sheet1", 12, 12, 1, 1, False, "new_format.slddrt", 0.42, 0.297, "Default", True)
+    
+    ' Zoom To Fit
+    swDrawing.ViewZoomtofit2
+Next
+
+' Activate first sheet so it is visible when opening the drawing
+swDrawing.ActivateSheet (firstSheet)
+
+' Zoom To Fit
+swDrawing.ViewZoomtofit2
+    
+' Save
+Dim swErrors As Long
+Dim swWarnings As Long
+boolstatus = Part.Save3(1, swErrors, swWarnings)
+
+' Close Document
+Set swDrawing = Nothing
+Set Part = Nothing
+swApp.CloseDoc ""
+
+fileName = Dir
+Loop
+
+swApp.ExitApp
+
+End Sub
