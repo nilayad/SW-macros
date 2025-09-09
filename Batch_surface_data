@@ -1,0 +1,100 @@
+' === Batch_Volume_Export.bas ===
+'Batch Part Volume Details.swp 
+
+'Description: Macro to export volume of Parts in the specified path.
+'Pre-Condition: Specify the file path in the macro.
+'Post-Condition: Macro will export volume of Parts in an excel file saved on desktop.
+
+' Please back up your data before use and USE AT OWN RISK
+
+' This macro is provided as is.  No claims, support, refund, safety net, or
+' warranties are expressed or implied.  By using this macro and/or its code in
+' any way whatsoever, the user and any entities which the user represents,
+' agree to hold the authors free of any and all liability.  Free distribution
+' and use of this code in other free works is welcome.  If any portion of
+' this code is used in other works, credit to the authors must be placed in
+' that work within a user viewable location (e.g., macro header).  All other
+' forms of distribution (i.e., not free, fee for delivery, etc) are prohibited
+' without the expressed written consent by the authors.  Use at your own risk!
+' ------------------------------------------------------------------------------
+' Written by: Nilaya D
+' Credits :Deepak Gupta (http://gupta9665.com/)
+' -------------------------------------------------------------------------------
+Option Explicit
+
+Dim swApp           As SldWorks.SldWorks
+Dim swModel         As SldWorks.ModelDoc2
+Dim MassProp        As SldWorks.MassProperty
+
+Dim longstatus      As Long, longwarnings As Long
+Dim sFileName       As String
+Dim Path            As String
+Dim sModelName      As String
+
+Dim xlApp           As Excel.Application
+Dim xlWb            As Excel.Workbook
+Dim xlWbs           As Excel.Workbooks
+Dim xlWs            As Excel.Worksheet
+Dim xlPath          As String
+Dim xlFN            As String
+Dim CurRow          As Integer
+Sub main()
+    
+On Error Resume Next
+
+Set swApp = Application.SldWorks
+    
+
+xlPath = Environ("USERPROFILE") & "\Desktop\"
+xlFN = "SurfaceArea Details" & ".xlsx"
+If Dir(xlPath & xlFN) <> "" Then
+Kill xlPath & xlFN
+End If
+
+Set xlApp = Excel.Application
+xlApp.Visible = True
+Set xlWbs = Excel.Workbooks
+Set xlWb = xlWbs.Add()
+Set xlWs = xlWb.Worksheets("Sheet1")
+
+xlWs.Range("A1").value = "Component Name"
+xlWs.Range("B1").value = "SurfaceArea (mm^2)"
+xlWb.SaveAs xlPath & xlFN
+CurRow = 2
+         
+    Path = "D:\ND\New folder" ' Change your file path here
+       
+    Path = Path & "\"
+    
+    sFileName = Dir(Path & "*.sldprt")
+    
+    Do Until sFileName = ""
+   
+    Set swModel = swApp.OpenDoc6(Path & sFileName, swDocPART, swOpenDocOptions_Silent, "", longstatus, longwarnings)
+    
+    Set swModel = swApp.ActiveDoc
+    
+    Debug.Print swModel.GetTitle
+    
+    Set MassProp = swModel.Extension.CreateMassProperty
+    
+    sModelName = Mid(swModel.GetPathName, InStrRev(swModel.GetPathName, "\") + 1)
+    sModelName = Left(sModelName, InStrRev(sModelName, ".") - 1)
+           
+    xlWs.Range("A" & CurRow).value = sModelName
+    xlWs.Range("B" & CurRow).value = Round(MassProp.SurfaceArea * 1000000#, 3) ' Change 3 here to change accuracy in decimals
+    
+    CurRow = CurRow + 1
+    
+    swApp.CloseDoc swModel.GetTitle
+   
+Set swModel = Nothing
+   
+sFileName = Dir
+   
+Loop
+
+xlWs.UsedRange.EntireColumn.AutoFit
+xlWb.Save
+
+End Sub
